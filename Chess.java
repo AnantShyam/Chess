@@ -18,7 +18,7 @@ public class Chess {
         Integer y= s.nextInt();
         Integer z= s.nextInt();
         Integer a= s.nextInt();
-        System.out.println(rookValid(board, x, y, z, a));
+        System.out.println(knightValid(board, x, y, z, a));
 
     }
 
@@ -115,6 +115,17 @@ public class Chess {
         }
         if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
         return true;
+
+    }
+
+    public static boolean knightValid(Piece[][] b, int xi, int yi, int xf, int yf) {
+        int xdiff= Math.abs(xf - xi);
+        int ydiff= Math.abs(yf - yi);
+        if (xdiff == 2 && ydiff == 1 || xdiff == 1 && ydiff == 2) {
+            if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
+            return true;
+        }
+        return false;
 
     }
 
