@@ -12,15 +12,7 @@ public class Chess {
 
     public static void main(String[] args) {
         board= init_board();
-        board[4][4]= new Piece("White", 4, 4, "Bishop");
-
         Scanner s= new Scanner(System.in);
-        System.out.println("Enter your positions: ");
-        Integer x= s.nextInt();
-        Integer y= s.nextInt();
-        Integer z= s.nextInt();
-        Integer a= s.nextInt();
-        System.out.println(bishopValid(board, x, y, z, a));
 
     }
 
