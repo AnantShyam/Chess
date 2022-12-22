@@ -13,6 +13,12 @@ public class Chess {
     public static void main(String[] args) {
         board= init_board();
         Scanner s= new Scanner(System.in);
+        System.out.println("Enter your positions: ");
+        Integer x= s.nextInt();
+        Integer y= s.nextInt();
+        Integer z= s.nextInt();
+        Integer a= s.nextInt();
+        System.out.println(rookValid(board, x, y, z, a));
 
     }
 
@@ -40,7 +46,7 @@ public class Chess {
 
     public static boolean pawnValid(Piece[][] b, int xi, int yi, int xf, int yf) {
         // Precondition: All coordinates are in bounds. Don't handle checks for right now
-
+        if (xf == xi && yi == yf) return false;
         Piece p= b[xi][yi];
         int xdiff= xf - xi;
         int ydiff= yf - yi;
@@ -74,6 +80,7 @@ public class Chess {
     }
 
     public static boolean bishopValid(Piece[][] b, int xi, int yi, int xf, int yf) {
+        if (xi == xf || yi == yf) return false;
         int slope= (yf - yi) / (xf - xi);
         if (slope != 1 && slope != -1) return false;
 
@@ -83,6 +90,28 @@ public class Chess {
             if (b[xptr][yptr] != null) return false;
             xptr++ ;
             yptr++ ;
+        }
+        if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
+        return true;
+
+    }
+
+    public static boolean rookValid(Piece[][] b, int xi, int yi, int xf, int yf) {
+
+        if (yf - yi != 0 && xf - xi != 0 ||
+            yf == yi && xf == xi) return false;
+
+        if (xi == xf) {
+            int yptr= yi + 1;
+            while (yptr < yf) {
+                if (b[xi][yptr] != null) return false;
+                yptr++ ;
+            }
+        } else if (yi == yf) {
+            int xptr= xi + 1;
+            while (xptr < xf) {
+                if (b[xptr][yi] != null) return false;
+            }
         }
         if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
         return true;
