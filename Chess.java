@@ -13,22 +13,24 @@ public class Chess {
     public static void main(String[] args) {
         board= init_board();
         Scanner s= new Scanner(System.in);
-        System.out.println("Enter your positions: ");
-        Integer x= s.nextInt();
-        Integer y= s.nextInt();
-        Integer z= s.nextInt();
-        Integer a= s.nextInt();
-        System.out.println(knightValid(board, x, y, z, a));
+        // System.out.println("Enter your positions: ");
+        // Integer x= s.nextInt();
+        // Integer y= s.nextInt();
+        // Integer z= s.nextInt();
+        // Integer a= s.nextInt();
 
     }
 
     public static void display_board(Piece[][] b) {
         for (int i= 0; i < b.length; i++ ) {
 
-            for (Piece p : b[i]) {
+            for (int j= 0; j < b[i].length; j++ ) {
+
+                Piece p= b[i][j];
 
                 if (p != null) {
-                    System.out.println(p.get_color() + p.get_name());
+                    System.out.println(i + " , " + j);
+                    System.out.println(p.full_name());
                 } else {
                     System.out.println("Blank");
                 }
@@ -40,7 +42,7 @@ public class Chess {
         return b[x][y] != null;
     }
 
-    public boolean isInBounds(Piece[][] b, int x, int y) {
+    public static boolean isInBounds(Piece[][] b, int x, int y) {
         return x >= 0 && x <= b.length - 1 && y >= 0 && y <= b.length - 1;
     }
 
@@ -81,16 +83,44 @@ public class Chess {
 
     public static boolean bishopValid(Piece[][] b, int xi, int yi, int xf, int yf) {
         if (xi == xf || yi == yf) return false;
-        int slope= (yf - yi) / (xf - xi);
+        int deltx= xf - xi;
+        int delty= yf - yi;
+        int slope= delty / deltx;
         if (slope != 1 && slope != -1) return false;
 
         int xptr= xi + 1;
         int yptr= yi + 1;
-        while (xptr < xf && yptr < yf) {
-            if (b[xptr][yptr] != null) return false;
-            xptr++ ;
-            yptr++ ;
+
+        if (deltx > 0 && delty > 0) {
+            while (xptr < xf && yptr < yf) {
+                if (b[xptr][yptr] != null) return false;
+                xptr++ ;
+                yptr++ ;
+            }
+        } else if (deltx < 0 && delty < 0) {
+            xptr= xi - 1;
+            yptr= yi - 1;
+            while (xptr > xf && yptr > yf) {
+                if (b[xptr][yptr] != null) return false;
+                xptr-- ;
+                yptr-- ;
+            }
+        } else if (deltx > 0 && delty < 0) {
+            yptr= yi - 1;
+            while (xptr < xf && yptr > yf) {
+                if (b[xptr][yptr] != null) return false;
+                xptr++ ;
+                yptr-- ;
+            }
+        } else if (deltx < 0 && delty > 0) {
+            xptr= xi - 1;
+            while (xptr > xf && yptr < yf) {
+                if (b[xptr][yptr] != null) return false;
+                xptr-- ;
+                yptr++ ;
+            }
         }
+
         if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
         return true;
 
@@ -103,16 +133,35 @@ public class Chess {
 
         if (xi == xf) {
             int yptr= yi + 1;
-            while (yptr < yf) {
-                if (b[xi][yptr] != null) return false;
-                yptr++ ;
+            if (yi < yf) {
+                while (yptr < yf) {
+                    if (b[xi][yptr] != null) return false;
+                    yptr++ ;
+                }
+            } else if (yi > yf) {
+                yptr= yi - 1;
+                while (yptr > yf) {
+                    if (b[xi][yptr] != null) return false;
+                    yptr-- ;
+                }
             }
+
         } else if (yi == yf) {
             int xptr= xi + 1;
-            while (xptr < xf) {
-                if (b[xptr][yi] != null) return false;
+            if (xf < xi) {
+                xptr= xi - 1;
+                while (xptr > xf) {
+                    if (b[xptr][yi] != null) return false;
+                    xptr-- ;
+                }
+            } else if (xf > xi) {
+                while (xptr < xf) {
+                    if (b[xptr][yi] != null) return false;
+                    xptr++ ;
+                }
             }
         }
+
         if (isOccupied(b, xf, yf)) { return b[xf][yf].get_color() != b[xi][yi].get_color(); }
         return true;
 
@@ -129,9 +178,57 @@ public class Chess {
 
     }
 
-    public boolean isValidMove(Piece[][] b, int xi, int yi, int xf, int yf) {
+    public static boolean queenValid(Piece[][] b, int xi, int yi, int xf, int yf) {
+        return bishopValid(b, xi, yi, xf, yf) || rookValid(b, xi, yi, xf, yf);
+    }
 
-        return true;
+    public static boolean inCheck(Piece[][] b, String c) {
+        // get position of king of color c
+
+        int king_x= -1;
+        int king_y= -1;
+
+        for (int i= 0; i < b.length; i++ ) {
+            for (int j= 0; j < b[i].length; j++ ) {
+                Piece p= b[i][j];
+                if (p != null && p.get_color() == c && p.get_name() == "King") {
+                    king_x= i;
+                    king_y= j;
+                }
+            }
+        }
+        // traverse through the entire board and check the valid moves from pieces
+        // of opposite color
+        for (int i= 0; i < b.length; i++ ) {
+            for (int j= 0; j < b[i].length; j++ ) {
+                Piece p= b[i][j];
+                if (p != null && p.get_color() != c && p.get_name() != "King") {
+                    if (isValidMove(b, i, j, king_x, king_y)) { return true; }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isValidMove(Piece[][] b, int xi, int yi, int xf, int yf) {
+
+        if (!isInBounds(b, xf, yf)) return false;
+
+        Piece p= b[xi][yi];
+        String name= p.get_name();
+
+        if (name == "Pawn") {
+            return pawnValid(b, xi, yi, xf, yf);
+        } else if (name == "Knight") {
+            return knightValid(b, xi, yi, xf, yf);
+        } else if (name == "Bishop") {
+            return bishopValid(b, xi, yi, xf, yf);
+        } else if (name == "Queen") {
+            return queenValid(b, xi, yi, xf, yf);
+        } else if (name == "Rook") { return rookValid(b, xi, yi, xf, yf); }
+
+        return false;
+
     }
 
     public static Piece[][] init_board() {
@@ -210,4 +307,7 @@ class Piece {
         return name;
     }
 
+    public String full_name() {
+        return color + " " + name;
+    }
 }
