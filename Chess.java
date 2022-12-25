@@ -61,8 +61,6 @@ public class Chess {
             return false;
         } else {
             if (p.get_color() == "White") {
-                System.out.printl("xdiff: " + xdiff);
-                System.out.println("ydiff: " + ydiff);
                 if (xi == 1) {
                     return (xdiff == 2 || xdiff == 1) && ydiff == 0;
                 } else {
