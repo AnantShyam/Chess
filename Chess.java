@@ -1,7 +1,5 @@
 package chess;
 
-import java.util.Scanner;
-
 public class Chess {
 
     public static Piece[][] board;
@@ -12,12 +10,12 @@ public class Chess {
 
     public static void main(String[] args) {
         board= init_board();
-        Scanner s= new Scanner(System.in);
         // System.out.println("Enter your positions: ");
         // Integer x= s.nextInt();
         // Integer y= s.nextInt();
         // Integer z= s.nextInt();
         // Integer a= s.nextInt();
+        System.out.println(kingValid(board, 5, 6, 4, 5));
 
     }
 
@@ -63,7 +61,7 @@ public class Chess {
             return false;
         } else {
             if (p.get_color() == "White") {
-                System.out.println("xdiff: " + xdiff);
+                System.out.printl("xdiff: " + xdiff);
                 System.out.println("ydiff: " + ydiff);
                 if (xi == 1) {
                     return (xdiff == 2 || xdiff == 1) && ydiff == 0;
@@ -182,6 +180,26 @@ public class Chess {
         return bishopValid(b, xi, yi, xf, yf) || rookValid(b, xi, yi, xf, yf);
     }
 
+    public static boolean kingValid(Piece[][] b, int xi, int yi, int xf, int yf) {
+
+        int deltx= Math.abs(xf - xi);
+        int delty= Math.abs(yf - yi);
+
+        System.out.println("change in x : " + deltx);
+        System.out.println("change in y : " + delty);
+
+        if (deltx != 1 && delty != 1) return false;
+        if (isOccupied(b, xf, yf)) {
+            if (b[xf][yf].get_color() == b[xi][yi].get_color()) { return false; }
+        }
+        Piece p= b[xi][yi];
+
+        System.out.println(p.full_name());
+        b[xf][yf]= p;
+        b[xi][yi]= null;
+        return !inCheck(b, p.get_color());
+    }
+
     public static boolean inCheck(Piece[][] b, String c) {
         // get position of king of color c
 
@@ -197,6 +215,9 @@ public class Chess {
                 }
             }
         }
+
+        System.out.println("New x pos :" + king_x);
+        System.out.println("New y pos :" + king_y);
         // traverse through the entire board and check the valid moves from pieces
         // of opposite color
         for (int i= 0; i < b.length; i++ ) {
