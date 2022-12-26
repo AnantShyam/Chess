@@ -10,13 +10,7 @@ public class Chess {
 
     public static void main(String[] args) {
         board= init_board();
-        // System.out.println("Enter your positions: ");
-        // Integer x= s.nextInt();
-        // Integer y= s.nextInt();
-        // Integer z= s.nextInt();
-        // Integer a= s.nextInt();
-        System.out.println(kingValid(board, 5, 6, 4, 5));
-
+        System.out.println("debugging");
     }
 
     public static void display_board(Piece[][] b) {
@@ -213,9 +207,6 @@ public class Chess {
                 }
             }
         }
-
-        System.out.println("New x pos :" + king_x);
-        System.out.println("New y pos :" + king_y);
         // traverse through the entire board and check the valid moves from pieces
         // of opposite color
         for (int i= 0; i < b.length; i++ ) {
