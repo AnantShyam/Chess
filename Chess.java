@@ -1,5 +1,7 @@
 package chess;
 
+import java.util.Scanner;
+
 public class Chess {
 
     public static Piece[][] board;
@@ -10,7 +12,33 @@ public class Chess {
 
     public static void main(String[] args) {
         board= init_board();
-        System.out.println("debugging");
+
+        Scanner s= new Scanner(System.in);
+        String input= s.nextLine();
+        int[] x= null;
+        try {
+            x= parse_user_input(input);
+
+        } catch (Exception e) {
+            System.out.println("Invalid input");
+        }
+
+    }
+
+    public static int[] parse_user_input(String input) throws Exception {
+        // User's input should be in the form of a letter and a number: Such as A6 or B3
+        // Letters should be in [A, G], Number should be in [1, 8].
+        input= input.trim().toLowerCase();
+        int letter= input.charAt(0) - 97;
+        int num= Integer.valueOf(Character.toString(input.charAt(1))) - 1;
+
+        if (num < 0 || num > 7 || letter < 0 || letter > 7) {
+            throw new Exception("Invalid Input");
+        }
+        int[] res= new int[2];
+        res[0]= letter;
+        res[1]= num;
+        return res;
     }
 
     public static void display_board(Piece[][] b) {
@@ -177,16 +205,12 @@ public class Chess {
         int deltx= Math.abs(xf - xi);
         int delty= Math.abs(yf - yi);
 
-        System.out.println("change in x : " + deltx);
-        System.out.println("change in y : " + delty);
-
         if (deltx != 1 && delty != 1) return false;
         if (isOccupied(b, xf, yf)) {
             if (b[xf][yf].get_color() == b[xi][yi].get_color()) { return false; }
         }
         Piece p= b[xi][yi];
 
-        System.out.println(p.full_name());
         b[xf][yf]= p;
         b[xi][yi]= null;
         return !inCheck(b, p.get_color());
@@ -207,13 +231,19 @@ public class Chess {
                 }
             }
         }
+
         // traverse through the entire board and check the valid moves from pieces
         // of opposite color
         for (int i= 0; i < b.length; i++ ) {
             for (int j= 0; j < b[i].length; j++ ) {
                 Piece p= b[i][j];
                 if (p != null && p.get_color() != c && p.get_name() != "King") {
-                    if (isValidMove(b, i, j, king_x, king_y)) { return true; }
+                    if (isValidMove(b, i, j, king_x, king_y)) {
+                        System.out.println("Piece checking king: " + b[i][j].full_name());
+                        System.out.println("Coords : " + i + " , " + j);
+                        return true;
+
+                    }
                 }
             }
         }
@@ -235,7 +265,12 @@ public class Chess {
             return bishopValid(b, xi, yi, xf, yf);
         } else if (name == "Queen") {
             return queenValid(b, xi, yi, xf, yf);
-        } else if (name == "Rook") { return rookValid(b, xi, yi, xf, yf); }
+        } else if (name == "Rook") {
+            return rookValid(b, xi, yi, xf, yf);
+        } else if (name == "King") {
+
+            return kingValid(b, xi, yi, xf, yf);
+        }
 
         return false;
 
@@ -267,9 +302,11 @@ public class Chess {
 
         // build a middle row of initially empty squares
         Piece[] middle= new Piece[8];
+        Piece[] middle2= new Piece[8];
+        Piece[] middle3= new Piece[8];
 
         Piece[][] res= { rowA, rowB, middle,
-                middle, middle, middle, rowG, rowH };
+                middle2, middle3, middle, rowG, rowH };
         return res;
     }
 
