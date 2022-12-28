@@ -7,22 +7,57 @@ public class Chess {
     public static Piece[][] board;
 
     public Chess() {
-
+        board= init_board();
     }
 
     public static void main(String[] args) {
         board= init_board();
 
-        Scanner s= new Scanner(System.in);
-        String input= s.nextLine();
-        int[] x= null;
-        try {
-            x= parse_user_input(input);
+    }
 
-        } catch (Exception e) {
-            System.out.println("Invalid input");
+    public static int[][] get_inputs(Boolean isWhiteTurn) {
+        Scanner s= new Scanner(System.in);
+
+        String beg= "";
+        if (isWhiteTurn) {
+            beg= "White";
+        } else {
+            beg= "Black";
         }
 
+        System.out.println(beg + ", it's your turn! First, enter the position of " +
+            "the piece you want to move : ");
+        String start= s.nextLine();
+        int[] input1= null;
+        int[] input2= null;
+        try {
+            input1= parse_user_input(start);
+        } catch (Exception e) {
+            System.out.println("Invalid input! Try again!");
+            return get_inputs(isWhiteTurn);
+        }
+
+        System.out.println("Now, enter the position you want to move that piece to : ");
+        String end= s.nextLine();
+        try {
+            input2= parse_user_input(end);
+        } catch (Exception e) {
+            System.out.println("Invalid input! Try again!");
+            return get_inputs(isWhiteTurn);
+        }
+
+        int[][] res= new int[2][1];
+        res[0]= input1;
+        res[1]= input2;
+        return res;
+
+    }
+
+    public static void game_loop(Piece[][] b, Boolean isWhiteTurn) {
+
+        if (isWhiteTurn) {
+
+        }
     }
 
     public static int[] parse_user_input(String input) throws Exception {
@@ -276,6 +311,14 @@ public class Chess {
 
     }
 
+    public static Piece[][] make_move(Piece[][] b, int xi, int yi, int xf, int yf) {
+        if (!isValidMove(b, xi, yi, xf, yf)) return b;
+        Piece p= b[xi][yi];
+        b[xf][yf]= p;
+        b[xi][yi]= null;
+        return b;
+    }
+
     public static Piece[][] init_board() {
 
         String[] back_pieces= { "Rook", "Knight", "Bishop", "King", "Queen",
@@ -300,13 +343,14 @@ public class Chess {
             rowG[i]= new Piece("Black", i, 6, "Pawn");
         }
 
-        // build a middle row of initially empty squares
+        // build 4 rows of initially empty squares
         Piece[] middle= new Piece[8];
         Piece[] middle2= new Piece[8];
         Piece[] middle3= new Piece[8];
+        Piece[] middle4= new Piece[8];
 
         Piece[][] res= { rowA, rowB, middle,
-                middle2, middle3, middle, rowG, rowH };
+                middle2, middle3, middle4, rowG, rowH };
         return res;
     }
 
