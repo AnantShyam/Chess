@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chess {
@@ -7,11 +8,11 @@ public class Chess {
     public static Piece[][] board;
 
     public Chess() {
-        board= init_board();
+        board= Game.init_board();
     }
 
     public static void main(String[] args) {
-        board= init_board();
+        board= Game.init_board();
 
     }
 
@@ -55,9 +56,7 @@ public class Chess {
 
     public static void game_loop(Piece[][] b, Boolean isWhiteTurn) {
 
-        if (isWhiteTurn) {
-
-        }
+        int[][] inputs= get_inputs(isWhiteTurn);
     }
 
     public static int[] parse_user_input(String input) throws Exception {
@@ -74,6 +73,47 @@ public class Chess {
         res[0]= letter;
         res[1]= num;
         return res;
+    }
+
+}
+
+class Game {
+
+    public static boolean in_checkmate(Piece[][] b, String color) {
+        if (!inCheck(b, color)) return false;
+
+        // traverse the possible moves of every piece of the same color
+        // as the king including that king itself. See if the king is still in check after that
+
+        ArrayList<Piece> pieces= new ArrayList<>();
+        for (int i= 0; i < b.length; i++ ) {
+            for (int j= 0; j < b[i].length; j++ ) {
+                Piece p= b[i][j];
+                if (p != null && p.get_color() == color) {
+                    pieces.add(p);
+                }
+
+            }
+        }
+
+        for (Piece p : pieces) {
+            int init_xpos= p.get_x();
+            int init_ypos= p.get_y();
+            for (int i= 0; i < b.length; i++ ) {
+                for (int j= 0; j < b[i].length; j++ ) {
+                    if (isValidMove(b, init_xpos, init_ypos, i, j)) {
+                        Piece repl= b[i][j];
+                        b[init_xpos][init_ypos]= null;
+                        b[i][j]= p;
+                        if (!inCheck(b, color)) return false;
+                        // restore the original board
+                        b[init_xpos][init_ypos]= p;
+                        b[i][j]= repl;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public static void display_board(Piece[][] b) {
@@ -401,4 +441,5 @@ class Piece {
     public String full_name() {
         return color + " " + name;
     }
+
 }
