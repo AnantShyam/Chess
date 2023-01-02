@@ -1,6 +1,5 @@
 package chess;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chess {
@@ -13,7 +12,11 @@ public class Chess {
 
     public static void main(String[] args) {
         board= Game.init_board();
-
+        for (int i= 0; i < board.length; i++ ) {
+            for (int j= 0; j < board[i].length; j++ ) {
+                board[i][j]= null;
+            }
+        }
     }
 
     public static int[][] get_inputs(Boolean isWhiteTurn) {
@@ -79,40 +82,37 @@ public class Chess {
 
 class Game {
 
-    public static boolean in_checkmate(Piece[][] b, String color) {
-        if (!inCheck(b, color)) return false;
-
-        // traverse the possible moves of every piece of the same color
-        // as the king including that king itself. See if the king is still in check after that
-
-        ArrayList<Piece> pieces= new ArrayList<>();
+    public static void copy(Piece[][] b, Piece[][] bd) {
         for (int i= 0; i < b.length; i++ ) {
             for (int j= 0; j < b[i].length; j++ ) {
-                Piece p= b[i][j];
-                if (p != null && p.get_color() == color) {
-                    pieces.add(p);
-                }
-
+                bd[i][j]= b[i][j];
             }
         }
+    }
 
-        for (Piece p : pieces) {
-            int init_xpos= p.get_x();
-            int init_ypos= p.get_y();
-            for (int i= 0; i < b.length; i++ ) {
-                for (int j= 0; j < b[i].length; j++ ) {
-                    if (isValidMove(b, init_xpos, init_ypos, i, j)) {
-                        Piece repl= b[i][j];
-                        b[init_xpos][init_ypos]= null;
-                        b[i][j]= p;
-                        if (!inCheck(b, color)) return false;
-                        // restore the original board
-                        b[init_xpos][init_ypos]= p;
-                        b[i][j]= repl;
-                    }
+    public static boolean inCheckmate(Piece[][] b, String color) {
+        if (!inCheck(b, color)) return false;
+        int king_x= get_king_pos(b, color)[0];
+        int king_y= get_king_pos(b, color)[1];
+
+        Piece[][] bd= new Piece[b.length][b.length];
+        copy(b, bd);
+
+        for (int i= 0; i < bd.length; i++ ) {
+            for (int j= 0; j < bd[i].length; j++ ) {
+                if (isValidMove(bd, king_x, king_y, i, j)) {
+                    System.out.println("Valid Coordinates: " + i + " , " + j);
+                    return false;
+                } else {
+                    copy(b, bd);
                 }
             }
         }
+
+        // At this point, the king cannot move anywhere without being in check.
+        // See if the other pieces can block the check or get rid of the piece
+        // that is causing the check
+
         return true;
     }
 
@@ -280,20 +280,24 @@ class Game {
         int deltx= Math.abs(xf - xi);
         int delty= Math.abs(yf - yi);
 
-        if (deltx != 1 && delty != 1) return false;
+        if (deltx > 1 || delty > 1) return false;
+        if (deltx == 0 && delty == 0) return false;
+
         if (isOccupied(b, xf, yf)) {
             if (b[xf][yf].get_color() == b[xi][yi].get_color()) { return false; }
         }
-        Piece p= b[xi][yi];
 
-        b[xf][yf]= p;
-        b[xi][yi]= null;
-        return !inCheck(b, p.get_color());
+        Piece[][] bd= new Piece[b.length][b.length];
+        copy(b, bd);
+
+        Piece p= bd[xi][yi];
+        bd[xf][yf]= p;
+        bd[xi][yi]= null;
+
+        return !inCheck(bd, p.get_color());
     }
 
-    public static boolean inCheck(Piece[][] b, String c) {
-        // get position of king of color c
-
+    public static int[] get_king_pos(Piece[][] b, String c) {
         int king_x= -1;
         int king_y= -1;
 
@@ -307,6 +311,18 @@ class Game {
             }
         }
 
+        int[] res= new int[2];
+        res[0]= king_x;
+        res[1]= king_y;
+        return res;
+    }
+
+    public static boolean inCheck(Piece[][] b, String c) {
+        // get position of king of color c
+
+        int king_x= get_king_pos(b, c)[0];
+        int king_y= get_king_pos(b, c)[1];
+
         // traverse through the entire board and check the valid moves from pieces
         // of opposite color
         for (int i= 0; i < b.length; i++ ) {
@@ -314,8 +330,6 @@ class Game {
                 Piece p= b[i][j];
                 if (p != null && p.get_color() != c && p.get_name() != "King") {
                     if (isValidMove(b, i, j, king_x, king_y)) {
-                        System.out.println("Piece checking king: " + b[i][j].full_name());
-                        System.out.println("Coords : " + i + " , " + j);
                         return true;
 
                     }
@@ -327,7 +341,7 @@ class Game {
 
     public static boolean isValidMove(Piece[][] b, int xi, int yi, int xf, int yf) {
 
-        if (!isInBounds(b, xf, yf)) return false;
+        if (b[xi][yi] == null || !isInBounds(b, xf, yf)) return false;
 
         Piece p= b[xi][yi];
         String name= p.get_name();
@@ -342,10 +356,7 @@ class Game {
             return queenValid(b, xi, yi, xf, yf);
         } else if (name == "Rook") {
             return rookValid(b, xi, yi, xf, yf);
-        } else if (name == "King") {
-
-            return kingValid(b, xi, yi, xf, yf);
-        }
+        } else if (name == "King") { return kingValid(b, xi, yi, xf, yf); }
 
         return false;
 
