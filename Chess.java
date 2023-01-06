@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Chess {
@@ -17,6 +18,13 @@ public class Chess {
                 board[i][j]= null;
             }
         }
+
+        board[0][0]= new Piece("White", 0, 0, "King");
+        board[0][1]= new Piece("Black", 0, 1, "Queen");
+        board[0][2]= new Piece("Black", 0, 2, "Rook");
+        board[3][1]= new Piece("White", 0, 2, "Rook");
+        // System.out.println(Game.isValidMove(board, 0, 0, 0, 1));
+        System.out.println(Game.inCheckmate(board, "White"));
     }
 
     public static int[][] get_inputs(Boolean isWhiteTurn) {
@@ -90,13 +98,35 @@ class Game {
         }
     }
 
+    public static int[] find_coords(Piece[][] b, String name, String color) {
+        int xpos= -1;
+        int ypos= -1;
+        for (int i= 0; i < b.length; i++ ) {
+            for (int j= 0; j < b[i].length; j++ ) {
+                Piece p= b[i][j];
+                if (p != null && p.get_color() == color && p.get_name() == name) {
+                    xpos= i;
+                    ypos= j;
+                }
+            }
+        }
+        int[] res= new int[2];
+        res[0]= xpos;
+        res[1]= ypos;
+        return res;
+    }
+
     public static boolean inCheckmate(Piece[][] b, String color) {
+
         if (!inCheck(b, color)) return false;
         int king_x= get_king_pos(b, color)[0];
         int king_y= get_king_pos(b, color)[1];
 
         Piece[][] bd= new Piece[b.length][b.length];
+        Piece[][] bd2= new Piece[b.length][b.length];
+
         copy(b, bd);
+        copy(b, bd2);
 
         for (int i= 0; i < bd.length; i++ ) {
             for (int j= 0; j < bd[i].length; j++ ) {
@@ -109,9 +139,57 @@ class Game {
             }
         }
 
+        System.out.println(bd2.length);
         // At this point, the king cannot move anywhere without being in check.
         // See if the other pieces can block the check or get rid of the piece
         // that is causing the check
+        ArrayList<Piece> pieces= new ArrayList<>();
+        for (int i= 0; i < bd2.length; i++ ) {
+            for (int j= 0; j < bd2[i].length; j++ ) {
+                if (bd2[i][j] != null) {
+                    pieces.add(bd2[i][j]);
+                }
+            }
+        }
+
+        for (Piece p : pieces) {
+            int xcoord= find_coords(bd2, p.get_name(), p.get_color())[0];
+            int ycoord= find_coords(bd2, p.get_name(), p.get_color())[1];
+            for (int i= 0; i < bd2.length; i++ ) {
+                for (int j= 0; j < bd2[i].length; j++ ) {
+//                    if (p.get_color() == "White") {
+//                        System.out.println(xcoord + " , " + ycoord);
+//                        System.out.println(i + " , " + j);
+//                        System.out.println(isValidMove(bd2, xcoord, ycoord, i, j));
+//
+//                        // update the board b2 here to actually properly see
+//                        // whether the king is in check after the piece is moved to (i, j)
+//                        make_move(bd2, xcoord, ycoord, i, j);
+//                        System.out.println(!inCheck(bd2,
+//                            p.get_color()));
+//                        copy(b, bd2);
+//                        System.out.println("-----------");
+//                    }
+
+                    if (p.get_color() == color) {
+                        if (isValidMove(bd2, xcoord, ycoord, i, j)) {
+                            make_move(bd2, xcoord, ycoord, i, j);
+                            if (!inCheck(bd2, p.get_color())) { return false; }
+                        }
+                    }
+                    copy(b, bd2);
+
+//                    if (p.get_color() == color &&
+//                        isValidMove(bd2, xcoord, ycoord, i, j) && !inCheck(bd2,
+//                            p.get_color())) {
+//                        return false;
+//                    } else {
+//                        // get bd2 back to its' original state
+//                        copy(bd2, b);
+//                    }
+                }
+            }
+        }
 
         return true;
     }
@@ -292,6 +370,8 @@ class Game {
 
         Piece p= bd[xi][yi];
         bd[xf][yf]= p;
+        p.set_x(xf);
+        p.set_y(yf);
         bd[xi][yi]= null;
 
         return !inCheck(bd, p.get_color());
@@ -367,6 +447,8 @@ class Game {
         Piece p= b[xi][yi];
         b[xf][yf]= p;
         b[xi][yi]= null;
+        p.set_x(xf);
+        p.set_y(yf);
         return b;
     }
 
