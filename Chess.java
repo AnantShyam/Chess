@@ -13,18 +13,7 @@ public class Chess {
 
     public static void main(String[] args) {
         board= Game.init_board();
-        for (int i= 0; i < board.length; i++ ) {
-            for (int j= 0; j < board[i].length; j++ ) {
-                board[i][j]= null;
-            }
-        }
 
-        board[0][0]= new Piece("White", 0, 0, "King");
-        board[0][1]= new Piece("Black", 0, 1, "Queen");
-        board[0][2]= new Piece("Black", 0, 2, "Rook");
-        board[3][1]= new Piece("White", 0, 2, "Rook");
-        // System.out.println(Game.isValidMove(board, 0, 0, 0, 1));
-        System.out.println(Game.inCheckmate(board, "White"));
     }
 
     public static int[][] get_inputs(Boolean isWhiteTurn) {
@@ -157,19 +146,6 @@ class Game {
             int ycoord= find_coords(bd2, p.get_name(), p.get_color())[1];
             for (int i= 0; i < bd2.length; i++ ) {
                 for (int j= 0; j < bd2[i].length; j++ ) {
-//                    if (p.get_color() == "White") {
-//                        System.out.println(xcoord + " , " + ycoord);
-//                        System.out.println(i + " , " + j);
-//                        System.out.println(isValidMove(bd2, xcoord, ycoord, i, j));
-//
-//                        // update the board b2 here to actually properly see
-//                        // whether the king is in check after the piece is moved to (i, j)
-//                        make_move(bd2, xcoord, ycoord, i, j);
-//                        System.out.println(!inCheck(bd2,
-//                            p.get_color()));
-//                        copy(b, bd2);
-//                        System.out.println("-----------");
-//                    }
 
                     if (p.get_color() == color) {
                         if (isValidMove(bd2, xcoord, ycoord, i, j)) {
@@ -179,14 +155,6 @@ class Game {
                     }
                     copy(b, bd2);
 
-//                    if (p.get_color() == color &&
-//                        isValidMove(bd2, xcoord, ycoord, i, j) && !inCheck(bd2,
-//                            p.get_color())) {
-//                        return false;
-//                    } else {
-//                        // get bd2 back to its' original state
-//                        copy(bd2, b);
-//                    }
                 }
             }
         }
