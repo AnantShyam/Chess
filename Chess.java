@@ -13,10 +13,10 @@ public class Chess {
 
     public static void main(String[] args) {
         board= Game.init_board();
-
+        game_loop(board, true);
     }
 
-    public static int[][] get_inputs(Boolean isWhiteTurn) {
+    public static int[][] get_inputs(Piece[][] b, Boolean isWhiteTurn) {
         Scanner s= new Scanner(System.in);
 
         String beg= "";
@@ -29,34 +29,79 @@ public class Chess {
         System.out.println(beg + ", it's your turn! First, enter the position of " +
             "the piece you want to move : ");
         String start= s.nextLine();
-        int[] input1= null;
-        int[] input2= null;
-        try {
-            input1= parse_user_input(start);
-        } catch (Exception e) {
-            System.out.println("Invalid input! Try again!");
-            return get_inputs(isWhiteTurn);
-        }
-
-        System.out.println("Now, enter the position you want to move that piece to : ");
+        System.out.println("Now, enter the position of the piece that you want to " +
+            "move the piece to");
         String end= s.nextLine();
-        try {
-            input2= parse_user_input(end);
-        } catch (Exception e) {
-            System.out.println("Invalid input! Try again!");
-            return get_inputs(isWhiteTurn);
-        }
 
-        int[][] res= new int[2][1];
-        res[0]= input1;
-        res[1]= input2;
-        return res;
+        try {
+            int[] init= parse_user_input(start);
+            int[] fin= parse_user_input(end);
+
+            if (b[init[0]][init[1]].get_color() != beg) { throw new Exception("Invalid Input"); }
+
+            if (!Game.isValidMove(b, init[0], init[1], fin[0], fin[1])) {
+                throw new Exception("Invalid Input");
+            }
+
+            int[][] res= new int[2][2];
+            res[0]= init;
+            res[1]= fin;
+            return res;
+
+        } catch (Exception e) {
+            System.out.println("Invalid Inputs! Please try again!");
+            return get_inputs(b, isWhiteTurn);
+        }
 
     }
 
     public static void game_loop(Piece[][] b, Boolean isWhiteTurn) {
 
-        int[][] inputs= get_inputs(isWhiteTurn);
+        while (!Game.inCheckmate(b, "White") && !Game.inCheckmate(b, "Black")) {
+
+            boolean loopcontinue= true;
+
+            while (loopcontinue) {
+
+                int[][] inputs= get_inputs(b, isWhiteTurn);
+
+                String beg= "";
+                if (isWhiteTurn) {
+                    beg= "White";
+                } else {
+                    beg= "Black";
+                }
+
+                Piece p= b[inputs[0][0]][inputs[0][1]];
+                Piece q= b[inputs[1][0]][inputs[1][1]];
+
+                if (q != null) {
+                    System.out.println(beg + " takes " + q.full_name() + " on " +
+                        interpret_coords(inputs[1]) +
+                        " with the " + p.full_name() + " on " +
+                        interpret_coords(inputs[0]));
+                } else {
+                    System.out.println(beg + " moves to " +
+                        interpret_coords(inputs[1]));
+                }
+
+                isWhiteTurn= !isWhiteTurn;
+                loopcontinue= false;
+
+            }
+
+        }
+
+        if (Game.inCheckmate(b, "White")) {
+            System.out.println("Black Wins!");
+        } else {
+            System.out.println("White wins!");
+        }
+
+    }
+
+    public static String interpret_coords(int[] coord) {
+        return Character.toUpperCase((char) (coord[0] + 97)) + "" + coord[1];
     }
 
     public static int[] parse_user_input(String input) throws Exception {
@@ -65,7 +110,6 @@ public class Chess {
         input= input.trim().toLowerCase();
         int letter= input.charAt(0) - 97;
         int num= Integer.valueOf(Character.toString(input.charAt(1))) - 1;
-
         if (num < 0 || num > 7 || letter < 0 || letter > 7) {
             throw new Exception("Invalid Input");
         }
@@ -127,8 +171,6 @@ class Game {
                 }
             }
         }
-
-        System.out.println(bd2.length);
         // At this point, the king cannot move anywhere without being in check.
         // See if the other pieces can block the check or get rid of the piece
         // that is causing the check
